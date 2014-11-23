@@ -1,6 +1,6 @@
 {
   "name": "led-canvas-matrix",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Matrix Class providing basic data structures for led-canvas and led-canvas-text",
   "main": "lib/index.js",
   "directories": {
