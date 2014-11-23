@@ -1,4 +1,6 @@
 var getBounds = require('./getBounds');
+var calculateBounds = require('./calculateBounds');
+var populate = require('./populate');
 var sortLeds = require('./sortLeds');
 
 class Matrix {
@@ -92,4 +94,8 @@ class Matrix {
 	}
 }
 
-module.exports = Matrix;
+module.exports = {
+	Matrix: Matrix,
+	calculateBounds: calculateBounds,
+	populate: populate
+};
