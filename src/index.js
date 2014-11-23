@@ -1,14 +1,15 @@
 var getBounds = require('./getBounds');
-var calculateBounds = require('./calculateBounds');
 var populate = require('./populate');
 var sortLeds = require('./sortLeds');
 
-class Matrix {
+class LedCanvasMatrix {
 	constructor(x = 0, y = 0, width = 1, height = 1, leds = []){
-		if (leds.length === 0) {
-			return null;
+		if (Array.isArray(leds)) {
+			this.leds = leds;
+		} else {
+			this.leds = populate(width, height, leds);
 		}
-		this.leds = leds;
+
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -20,12 +21,12 @@ class Matrix {
 		y = (y >= this.height) ? 0 : y;
 		let led = this.leds[x + y * this.width];
 		let leds = led ? [led] : undefined;
-		return led ? new Matrix(x, y, 1, 1, leds) : null;
+		return led ? new LedCanvasMatrix(x, y, 1, 1, leds) : null;
 	}
 
 	index(idx) {
 		var led = this.leds[idx];
-		return new Matrix(led.x, led.y, 1, 1, [led]);
+		return new LedCanvasMatrix(led.x, led.y, 1, 1, [led]);
 	}
 
 	prop(key, value) {
@@ -34,17 +35,17 @@ class Matrix {
 		});
 
 		let bounds = getBounds(leds);
-		return new Matrix(bounds.x, bounds.y, bounds.width, bounds.height, leds);
+		return new LedCanvasMatrix(bounds.x, bounds.y, bounds.width, bounds.height, leds);
 	}
 
 	row(y) {
-		return new Matrix(this.x, y, this.width, 1, this.leds.filter(function(led){
+		return new LedCanvasMatrix(this.x, y, this.width, 1, this.leds.filter(function(led){
 			return led.y == y;
 		}));
 	}
 
 	column(x) {
-		return new Matrix(x, this.y, 1, this.height, this.leds.filter(function(led){
+		return new LedCanvasMatrix(x, this.y, 1, this.height, this.leds.filter(function(led){
 			return led.x == x;
 		}));
 	}
@@ -53,7 +54,7 @@ class Matrix {
 		let xmax = x + width;
 		let ymax = y + height;
 
-		return new Matrix(x, y, width, height, this.leds.filter(function(led){
+		return new LedCanvasMatrix(x, y, width, height, this.leds.filter(function(led){
 			return led.x >= x && led.x < xmax && led.y >= y && led.y < ymax;
 		}));
 	}
@@ -88,14 +89,24 @@ class Matrix {
 	}
 
 	add(matrix) {
-		let leds = this.leds.concat(matrix.leds).sort(sortLeds);
+		let moved = matrix.leds.map((led) => {
+			led.x += this.width;
+			return led;
+		});
+
+		let leds = this.leds.concat(moved).sort(sortLeds);
+
 		let bounds = getBounds(leds);
-		return new Matrix(bounds.x, bounds.y, bounds.width, bounds.height, leds);
+		return new LedCanvasMatrix(bounds.x, bounds.y, bounds.width, bounds.height, leds);
+	}
+
+	join(matrix, x = 0, y = 0) {
+		matrix.leds.forEach((led) => {
+			this.get(led.x + x, led.y + y).set(led.enabled);
+		});
+
+		return this;
 	}
 }
 
-module.exports = {
-	Matrix: Matrix,
-	calculateBounds: calculateBounds,
-	populate: populate
-};
+module.exports = LedCanvasMatrix;
