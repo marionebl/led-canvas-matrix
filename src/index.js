@@ -101,11 +101,15 @@ class LedCanvasMatrix {
 	}
 
 	join(matrix, x = 0, y = 0) {
-		matrix.leds.forEach((led) => {
-			this.get(led.x + x, led.y + y).set(led.enabled);
+		let leds = matrix.leds.map((led) => {
+			let xOffset = (matrix.x + led.x + x) % this.width;
+			let yOffset = (matrix.y + led.y + y) % this.height;
+			let submatrix = this.get(xOffset, yOffset);
+			submatrix.set(led.enabled);
+			return submatrix.leds[0];
 		});
 
-		return this;
+		return new LedCanvasMatrix(matrix.x + x, matrix.y + y, matrix.width, matrix.height, leds);
 	}
 }
 
