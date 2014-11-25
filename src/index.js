@@ -17,8 +17,8 @@ class LedCanvasMatrix {
 	}
 
 	get(x, y) {
-		x = (x >= this.width) ? 0 : x;
-		y = (y >= this.height) ? 0 : y;
+		x = x % this.width;
+		y = y % this.height;
 		let led = this.leds[x + y * this.width];
 		let leds = led ? [led] : undefined;
 		return led ? new LedCanvasMatrix(x, y, 1, 1, leds) : null;
@@ -102,14 +102,14 @@ class LedCanvasMatrix {
 
 	join(matrix, x = 0, y = 0) {
 		let leds = matrix.leds.map((led) => {
-			let xOffset = (matrix.x + led.x + x) % this.width;
-			let yOffset = (matrix.y + led.y + y) % this.height;
-			let submatrix = this.get(xOffset, yOffset);
-			submatrix.set(led.enabled);
-			return submatrix.leds[0];
+			let xl = (matrix.x + led.x + x) % this.width;
+			let yl = (matrix.y + led.y + y) % this.height;
+			return this.get(xl, yl).set(led.enabled).leds[0];
 		});
 
-		return new LedCanvasMatrix(matrix.x + x, matrix.y + y, matrix.width, matrix.height, leds);
+		let xc = (matrix.x + x) % this.width;
+		let yc = (matrix.y + y) % this.width;
+		return new LedCanvasMatrix(xc, yc, matrix.width, matrix.height, leds);
 	}
 }
 
